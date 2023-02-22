@@ -20,8 +20,8 @@ export default class Instance {
         let method = this.klass.findMethod(name.value);
         if(method != null) return method.bind(this);
 
-        let property = this.klass.findProperty(name.value);
-        if(property != null) return property;
+        // let property = this.klass.findProperty(name.value);
+        // if(property != null) return property;
 
         throw new RuntimeError(`Undefined property '${name.value}'.`, name.posStart, name.posEnd);
     }

@@ -273,7 +273,7 @@ export default class Parser {
                 return new VarReAssignNode(name, value)
             } else if(expr instanceof GetNode) {
                 let get = <GetNode> expr;
-                return new SetNode(get.object, get.name, expr);
+                return new SetNode(get.object, get.name, value);
             }
 
             this.error("Invalid assignment target.", equal.posStart, equal.posEnd);

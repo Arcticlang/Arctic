@@ -49,6 +49,7 @@ export default class Function implements Callable {
 		} catch (returnValue) {
 			if (!(returnValue instanceof Return)) return null;
 			if(this.isInitializer) return this.closure.getAt(0, "this");
+			
 			if (!Typing.validate(this.declaration.type, returnValue.value)) {
 				throw new RuntimeError(
 					`Return value of ${this.declaration.name.value} does not match the type.`,

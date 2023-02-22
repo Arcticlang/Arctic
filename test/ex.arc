@@ -1,9 +1,8 @@
 class Console {
     var string name
 
-    void Console(string name) {
+    Console Console(string name) {
         this.name = name
-        println(this.name)
     }
 
     string getName() {
