@@ -1,0 +1,30 @@
+{
+  "name": "arctic",
+  "version": "1.0.0",
+  "description": "Making programming easier.",
+  "main": "bin/index.js",
+  "bin": {
+    "arc": "./bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arcticlang/Arctic.git"
+  },
+  "keywords": [],
+  "author": "MiccDev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Arcticlang/Arctic/issues"
+  },
+  "homepage": "https://github.com/Arcticlang/Arctic#readme",
+  "devDependencies": {
+    "@types/node": "^18.13.0",
+    "@types/yargs": "^17.0.22"
+  },
+  "dependencies": {
+    "chalk": "2.4"
+  }
+}
