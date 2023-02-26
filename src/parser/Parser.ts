@@ -21,6 +21,8 @@ import ClassNode from "./nodes/ClassNode";
 import GetNode from "./nodes/GetNode";
 import SetNode from './nodes/SetNode';
 import ThisNode from "./nodes/ThisNode";
+import NamespaceNode from "./nodes/NamespaceNode";
+import ImportNode from "./nodes/ImportNode";
 
 export default class Parser {
 
@@ -57,6 +59,7 @@ export default class Parser {
         try {
             if(this.matchKeyword("class")) return this.classDeclaration();
             if(this.matchKeyword("var")) return this.varDeclaration();
+            if(this.matchKeyword("namespace")) return this.namespaceDeclaration();
             if(this.matchKeyword("func")) return this.function("function");
 
             return this.statement();
@@ -72,11 +75,35 @@ export default class Parser {
         if(this.matchKeyword("while")) return this.whileStatement();
         if(this.matchKeyword("return")) return this.returnStatement();
         if(this.matchKeyword("for")) return this.forStatement();
+        if(this.matchKeyword("import")) return this.importStatement();
 
         return this.expression();
     }
 
-    classDeclaration(): Node {
+    namespaceDeclaration(): NamespaceNode {
+        let name = this.consume("IDENTIFIER", "Expect namespace name.");
+        this.consume("LBRACE", "Expect '{' before namespace body.");
+
+        let properties = new Array<VarAssignNode>();
+        let methods = new Array<FuncDefNode>();
+        let classes = new Array<ClassNode>();
+        while(!this.check("RBRACE") && !this.isAtEnd()) {
+            if(this.matchKeyword("var")) {
+                properties.push(this.varDeclaration());
+                continue;
+            } else if(this.matchKeyword("class")) {
+                classes.push(this.classDeclaration());
+                continue;
+            }
+            methods.push(this.function("function"));
+        }
+
+        this.consume("RBRACE", "Expect '}' after namespace body.");
+
+        return new NamespaceNode(name, properties, methods, classes);
+    }
+
+    classDeclaration(): ClassNode {
         let name = this.consume("IDENTIFIER", "Expect class name.");
         this.consume("LBRACE", "Expect '{' before class body.");
 
@@ -193,6 +220,17 @@ export default class Parser {
         cases.push({ condition, body: thenBranch });
 
         return new IfNode(cases, elseBranch);
+    }
+
+    importStatement(): Node {
+        let pgk = this.matchKeyword("package");
+
+        if(!this.match("STRING")) {
+            this.error("Expected a string for import.", this.peek().posStart, this.peek().posEnd);
+        }
+        let location = this.previous();
+
+        return new ImportNode(location, pgk);
     }
 
     block() {

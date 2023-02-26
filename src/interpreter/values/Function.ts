@@ -7,13 +7,15 @@ import Typing from "../Typing";
 import RuntimeError from "../../errors/RuntimeError";
 import Return from "../Return";
 import Instance from "./Instance";
+import CallableFunction from "./CallableFunction";
 
-export default class Function implements Callable {
+export default class Function extends CallableFunction {
 	private declaration: FuncDefNode;
 	private readonly closure: Environment;
 	private readonly isInitializer: boolean;
 
 	constructor(declaration: FuncDefNode, closure: Environment, isInitializer: boolean) {
+		super(declaration.name.value);
 		this.declaration = declaration;
 		this.closure = closure;
 		this.isInitializer = isInitializer;
@@ -49,7 +51,7 @@ export default class Function implements Callable {
 		} catch (returnValue) {
 			if (!(returnValue instanceof Return)) return null;
 			if(this.isInitializer) return this.closure.getAt(0, "this");
-			
+
 			if (!Typing.validate(this.declaration.type, returnValue.value)) {
 				throw new RuntimeError(
 					`Return value of ${this.declaration.name.value} does not match the type.`,
@@ -64,7 +66,4 @@ export default class Function implements Callable {
 		return null;
 	}
 
-	[util.inspect.custom]() {
-		return `<function ${this.declaration.name.value}>`;
-	}
 }

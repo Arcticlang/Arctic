@@ -5,6 +5,7 @@ import Position from '../Position';
 export default class RuntimeError extends ArcticError {
     constructor(details: string, posStart: Position, posEnd: Position) {
         super('Runtime Error', details, posStart, posEnd);
+
     }
 
     [util.inspect.custom]() {

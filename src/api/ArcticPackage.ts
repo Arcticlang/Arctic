@@ -1,16 +1,38 @@
-import Environment from "../interpreter/Environment";
-import Interpreter from "../interpreter/Interpreter";
-import { Callable } from "../interpreter/values/Callable";
-import ArcticClass from "./ArcticClass";
-import ArcticVariable from "./ArcticVariable";
+import CallableFunction from "../interpreter/values/CallableFunction";
+import Class from "../interpreter/values/Class";
+import Namespace from "../interpreter/values/Namespace";
+import Environment from '../interpreter/Environment';
 
-export type ArcticType = | ArcticVariable | Callable | ArcticClass;
+/*
+import package "test"
 
-export default class ArcticPackage {
-    readonly environment: Environment;
+test.hello()
+*/
 
-    constructor() {
-        this.environment = new Environment(Interpreter.interpreter.globals);
+export default class ArcticPackage extends Namespace {
+    readonly name: string;
+
+    constructor(name: string) {
+        super(name, new Map(), new Map(), new Map());
+        this.name = name;
+    }
+
+    addClass(klass: Class) {
+        this.classes.set(klass.name, klass);
+    }
+
+    addMethod(method: CallableFunction) {
+        this.methods.set(method.name, method);
+    }
+
+    addProperty(name: string, value: any) {
+        this.properties.set(name, value);
+    }
+
+    addPropertiesFromEnvironment(environment: Environment) {
+        environment.values.forEach((value, key) => {
+            this.addProperty(key, value);
+        }, this);
     }
 
 }

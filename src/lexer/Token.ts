@@ -28,14 +28,20 @@ export const keywords: string[] = [
     "continue",
 
     "class",
-    "this"
+    "this",
+
+    "namespace",
+
+    "import",
+    "package"
 ];
 
 export const types = [
     "number",
     "string",
     "boolean",
-    "void"
+    "void",
+    "any"
 ];
 
 export default class Token {

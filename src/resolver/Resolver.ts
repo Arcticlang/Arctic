@@ -21,6 +21,8 @@ import SetNode from "../parser/nodes/SetNode";
 import CastNode from "../parser/nodes/CastNode";
 import ClassNode from "../parser/nodes/ClassNode";
 import ThisNode from "../parser/nodes/ThisNode";
+import NamespaceNode from "../parser/nodes/NamespaceNode";
+import ImportNode from "../parser/nodes/ImportNode";
 
 export enum FunctionType {
 	NONE,
@@ -64,14 +66,18 @@ export default class Resolver {
 	}
 
 	visit_ClassNode(node: ClassNode) {
-		let enclosingClass = this.currentClass;
-		this.currentClass = ClassType.CLASS;
+		this.declare(node.name);
+		this.define(node.name);
 
+		this.resolveClass(node, ClassType.CLASS);
+		return null;
+	}
+
+	visit_NamespaceNode(node: NamespaceNode) {
 		this.declare(node.name);
 		this.define(node.name);
 
 		this.beginScope();
-		this.scopes.peek().set("this", true);
 
 		for (let property of node.properties) {
 			this.declare(property.name);
@@ -79,17 +85,14 @@ export default class Resolver {
 		}
 
 		for (let method of node.methods) {
-			let declaration = FunctionType.METHOD;
-			if (method.name.value === node.name.value) {
-				declaration = FunctionType.INITALIZER;
-			}
+			this.resolveFunction(method, FunctionType.METHOD);
+		}
 
-			this.resolveFunction(method, declaration);
+		for (let klass of node.classes) {
+			this.resolveClass(klass, ClassType.CLASS);
 		}
 
 		this.endScope();
-
-		this.currentClass = enclosingClass;
 		return null;
 	}
 
@@ -229,6 +232,10 @@ export default class Resolver {
 		return null;
 	}
 
+	visit_ImportNode(node: ImportNode) {
+		return null;
+	}
+
 	beginScope() {
 		this.scopes.push(new Map());
 	}
@@ -263,6 +270,32 @@ export default class Resolver {
 				return;
 			}
 		}
+	}
+
+	resolveClass(node: ClassNode, classType: ClassType) {
+		let enclosingClass = this.currentClass;
+		this.currentClass = classType;
+
+		this.beginScope();
+		this.scopes.peek().set("this", true);
+
+		for (let property of node.properties) {
+			this.declare(property.name);
+			this.define(property.name);
+		}
+
+		for (let method of node.methods) {
+			let declaration = FunctionType.METHOD;
+			if (method.name.value === node.name.value) {
+				declaration = FunctionType.INITALIZER;
+			}
+
+			this.resolveFunction(method, declaration);
+		}
+
+		this.endScope();
+
+		this.currentClass = enclosingClass;
 	}
 
 	resolveFunction(func: FuncDefNode, type: FunctionType) {

@@ -6,6 +6,8 @@ export default class Typing {
     static validate(type: Token, value: any) {
 		if(value == null) return true;
         if(type.value == "void") return true;
+
+		if(type.value == "any") return true;
 		
 		if(typeof value == "number" && type.value == "number") return true;
 		else if(typeof value == "string" && type.value == "string") return true;

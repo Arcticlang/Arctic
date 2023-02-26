@@ -1,21 +1,21 @@
 import { Callable } from './Callable';
 import util from 'util';
 import Interpreter from '../Interpreter';
+import CallableFunction from './CallableFunction';
 import Instance from './Instance';
-import Function from './Function';
 
 export default class Class implements Callable {
     readonly name: string;
-    private readonly methods: Map<string, Function>;
+    private readonly methods: Map<string, CallableFunction>;
     readonly properties: Map<string, any>;
 
-    constructor(name: string, methods: Map<string, Function>, properties: Map<string, any>) {
+    constructor(name: string, methods: Map<string, CallableFunction>, properties: Map<string, any>) {
         this.name = name;
         this.methods = methods;
         this.properties = properties;
     }
 
-    findMethod(name: string): Function {
+    findMethod(name: string): CallableFunction {
         if(this.methods.has(name)) {
             return this.methods.get(name)!;
         }
@@ -29,6 +29,24 @@ export default class Class implements Callable {
         }
 
         return null;
+    }
+
+    set(name: string, value: any) {
+        this.properties.set(name, value);
+    }
+
+    setMethod(method: CallableFunction) {
+        this.methods.set(method.name, method);
+    }
+
+    createInstance(args: any[]): Instance {
+        let instance = new Instance(this);
+        let initializer = this.findMethod(this.name);
+        if(initializer != null) {
+            initializer.bind(instance).call(Interpreter.interpreter, args);
+        }
+
+        return instance;
     }
 
     get arity() {

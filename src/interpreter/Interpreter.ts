@@ -26,6 +26,9 @@ import Instance from "./values/Instance";
 import GetNode from "../parser/nodes/GetNode";
 import SetNode from "../parser/nodes/SetNode";
 import ThisNode from "../parser/nodes/ThisNode";
+import NamespaceNode from '../parser/nodes/NamespaceNode';
+import Namespace from "./values/Namespace";
+import ImportNode from "../parser/nodes/ImportNode";
 
 export function getattr(obj: any, prop: any, defaultValue: any = null) {
 	if (prop in obj) {
@@ -48,22 +51,10 @@ export default class Interpreter {
 
 	private readonly locals: Map<Node, number> = new Map();
 
-	constructor() {
-		this.globals.define("println", {
-			arity: 1,
-			call(interpreter, args) {
-				let value = args[0];
-				if (typeof value != "string") {
-					console.log("Runtime Error: Expected string in 'println'.");
-					return;
-				}
-				console.log(value);
-				return null;
-			},
-		} as Callable);
-	}
+	constructor() {}
 
 	interpret(statements: Node[]) {
+		this.environment = this.globals;
 		try {
 			for (let statement of statements) {
 				this.visit(statement);
@@ -71,6 +62,7 @@ export default class Interpreter {
 		} catch (e) {
 			console.log(e);
 		}
+		return this.environment;
 	}
 
 	visit(node: Node) {
@@ -85,6 +77,15 @@ export default class Interpreter {
 
 	visit_LiteralNode(node: LiteralNode) {
 		return node.token.value;
+	}
+
+	visit_ImportNode(node: ImportNode) {
+		let location = node.name;
+		if(node.package) {
+			this.environment.loadPackage(location);
+		} else {
+			this.environment.loadFile(location);
+		}
 	}
 
 	visit_CastNode(node: CastNode) {
@@ -189,7 +190,7 @@ export default class Interpreter {
 		}
 
 		this.environment.define(node.name.value, value);
-		return null!;
+		return value;
 	}
 
 	visit_VarAccessNode(node: VarAccessNode) {
@@ -228,6 +229,19 @@ export default class Interpreter {
 	visit_ClassNode(node: ClassNode) {
 		this.environment.define(node.name.value, null);
 
+		this.environment.assign(node.name, this.makeClass(node));
+		return null;
+	}
+
+	visit_NamespaceNode(node: NamespaceNode) {
+		let name = node.name.value;
+		this.environment.define(name, null);
+
+		let classes = new Map<string, Class>();
+		for(let klass of node.classes) {
+			classes.set(klass.name.value, this.makeClass(klass));
+		}
+
 		let methods = new Map<string, Function>();
 		for(let method of node.methods) {
 			let func = new Function(method, this.environment, method.name.value == node.name.value);
@@ -239,8 +253,8 @@ export default class Interpreter {
 			properties.set(property.name.value, this.visit(property));
 		}
 
-		let klass = new Class(node.name.value, methods, properties);
-		this.environment.assign(node.name, klass);
+		let namespace = new Namespace(name, classes, methods, properties);
+		this.environment.assign(node.name, namespace);
 		return null;
 	}
 
@@ -310,11 +324,11 @@ export default class Interpreter {
 
 	visit_GetNode(node: GetNode) {
 		let object = this.visit(node.object);
-		if(object instanceof Instance) {
+		if(object instanceof Instance || object instanceof Namespace) {
 			return object.get(node.name);
 		}
 
-		throw new RuntimeError("Only instances have properties.", node.posStart, node.posEnd);
+		throw new RuntimeError("Only instances and namespaces have properties.", node.posStart, node.posEnd);
 	}
 
 	visit_SetNode(node: SetNode) {
@@ -325,12 +339,28 @@ export default class Interpreter {
 		}
 
 		let value = this.visit(node.value);
-		object.set(node.name, value);
+		object.set(node.name.value, value);
 		return value;
 	}
 
 	visit_ThisNode(node: ThisNode) {
 		return this.lookUpVariable(node.token, node);
+	}
+
+	makeClass(node: ClassNode) {
+		let methods = new Map<string, Function>();
+		for(let method of node.methods) {
+			let func = new Function(method, this.environment, method.name.value == node.name.value);
+			methods.set(method.name.value, func);
+		}
+
+		let properties = new Map<string, any>();
+		for(let property of node.properties) {
+			properties.set(property.name.value, this.visit(property));
+		}
+
+		let klass = new Class(node.name.value, methods, properties);
+		return klass;
 	}
 
 	lookUpVariable(name: Token, node: Node) {

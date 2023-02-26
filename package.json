@@ -1,19 +1,24 @@
 {
-  "name": "arctic",
-  "version": "1.0.0",
-  "description": "Making programming easier.",
-  "main": "bin/index.js",
-  "bin": {
-    "arc": "./bin/index.js"
-  },
+  "name": "arcticlang",
+  "version": "0.0.4",
+  "description": "A programming language, made easy, for beginners.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "compile": "pkg -t node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path build/arctic dist/index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arcticlang/Arctic.git"
   },
-  "keywords": [],
+  "keywords": [
+    "Programming-Language",
+    "Language",
+    "Programming",
+    "Arctic",
+    "Arcticlang"
+  ],
   "author": "MiccDev",
   "license": "MIT",
   "bugs": {
@@ -21,10 +26,13 @@
   },
   "homepage": "https://github.com/Arcticlang/Arctic#readme",
   "devDependencies": {
-    "@types/node": "^18.13.0",
-    "@types/yargs": "^17.0.22"
+    "@types/node": "^18.14.1"
   },
-  "dependencies": {
-    "chalk": "2.4"
+  "bin": {
+    "arctic": "./bin/arctic"
+  },
+  "preferGlobal": true,
+  "pkg": {
+    "targets": [ "node14-linux-x64", "node14-maxos-x64", "node19-win-x64" ]
   }
 }

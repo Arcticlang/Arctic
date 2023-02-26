@@ -1,11 +1,14 @@
-import Class from "./Class";
 import util from 'util';
 import Token from "../../lexer/Token";
 import RuntimeError from "../../errors/RuntimeError";
+import { Callable } from "./Callable";
+import Class from './Class';
 
 export default class Instance {
+    fields: Map<string, any> = new Map();
+    methods: Map<string, Callable> = new Map();
+
     readonly klass: Class;
-    private fields: Map<string, any> = new Map();
 
     constructor(klass: Class) {
         this.klass = klass;
@@ -20,14 +23,11 @@ export default class Instance {
         let method = this.klass.findMethod(name.value);
         if(method != null) return method.bind(this);
 
-        // let property = this.klass.findProperty(name.value);
-        // if(property != null) return property;
-
         throw new RuntimeError(`Undefined property '${name.value}'.`, name.posStart, name.posEnd);
     }
 
-    set(name: Token, value: any) {
-        this.fields.set(name.value, value);
+    set(name: string, value: any) {
+        this.fields.set(name, value);
     }
 
     toString() {
