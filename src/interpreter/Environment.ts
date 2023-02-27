@@ -58,7 +58,7 @@ export default class Environment {
         let packageConfigPath = path.join(packagePath, "iceage-package.json");
         if(!fs.existsSync(packageConfigPath)) 
             throw new RuntimeError(
-                `Requested package doesn't contain a 'icage-package.json'.`,
+                `Requested package doesn't contain a 'iceage-package.json'.`,
                 token.posStart,
                 token.posEnd
             );
@@ -71,8 +71,15 @@ export default class Environment {
 
 		let mainFile = packageConfig.entry;
 		let mainFilePath = path.join(packagePath, mainFile);
-		if (mainFile.endsWith(".ts")) {
+
+		if (mainFile.endsWith(".js")) {
 			let pgk = require(mainFilePath).default as ArcticPackage;
+			if(!pgk) 
+				throw new RuntimeError(
+					`No default export found from package '${packageConfig.displayName}'.`,
+					token.posStart,
+					token.posEnd
+				);
 			this.values.set(name, pgk);
 			return;
 		}

@@ -16,14 +16,8 @@ import { Callable } from './interpreter/values/Callable';
 import Typing from './interpreter/Typing';
 import Instance from './interpreter/values/Instance';
 
-function main() {
-	process.argv.splice(0, 2);
-	const file = process.argv[0];
-	runFile(file);
-}
-
 function runFile(file: string) {
-	if (!file) {
+	if (file.trim() == "") {
 		console.log(new FileError("Please input a file."));
 		return;
 	}
@@ -57,8 +51,6 @@ function runFile(file: string) {
 
 	return Interpreter.interpreter.interpret(statements);
 }
-
-main();
 
 export {
 	ArcticError,
