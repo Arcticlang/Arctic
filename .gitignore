@@ -105,5 +105,4 @@ dist
 
 test/
 dist/
-bin/
 build/

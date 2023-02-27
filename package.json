@@ -1,6 +1,6 @@
 {
   "name": "arcticlang",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A programming language, made easy, for beginners.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -27,12 +27,5 @@
   "homepage": "https://github.com/Arcticlang/Arctic#readme",
   "devDependencies": {
     "@types/node": "^18.14.1"
-  },
-  "bin": {
-    "arctic": "./bin/arctic"
-  },
-  "preferGlobal": true,
-  "pkg": {
-    "targets": [ "node14-linux-x64", "node14-maxos-x64", "node19-win-x64" ]
   }
 }
