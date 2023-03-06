@@ -3,8 +3,8 @@ import os from "os";
 import RuntimeError from "../errors/RuntimeError";
 import Token from "../lexer/Token";
 import fs from "fs";
-import ArcticPackage from "../api/ArcticPackage";
 import { runFile } from "..";
+import { ArcticPackage, Namespace } from "arcticpackage";
 
 export type IceagePackage = {
 	name: string;
@@ -73,21 +73,24 @@ export default class Environment {
 		let mainFilePath = path.join(packagePath, mainFile);
 
 		if (mainFile.endsWith(".js")) {
-			let pgk = require(mainFilePath).default as ArcticPackage;
+			let pgk = require(mainFilePath).default as Namespace;
 			if(!pgk) 
 				throw new RuntimeError(
 					`No default export found from package '${packageConfig.displayName}'.`,
 					token.posStart,
 					token.posEnd
 				);
-			this.values.set(name, pgk);
+
+			this.values.set(name, new Namespace(packageConfig.name, pgk.properties));
 			return;
 		}
 		
 		const fileEnv = runFile(mainFilePath);
 		if (fileEnv == undefined) return;
-		const pgk = new ArcticPackage(name);
-		pgk.addPropertiesFromEnvironment(fileEnv);
+		const pgk = new Namespace(name);
+		fileEnv.values.forEach((value, key) => {
+			pgk.set(key, value);
+		}, this);
 		this.values.set(name, pgk);
 	}
 

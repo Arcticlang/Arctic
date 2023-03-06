@@ -6,18 +6,9 @@ import Interpreter from "./interpreter/Interpreter";
 import Lexer from "./lexer/Lexer";
 import Parser from "./parser/Parser";
 import Resolver from "./resolver/Resolver";
-import ArcticError from './errors/ArcticError';
-import ArcticFunction from './api/ArcticFunction';
-import ArcticPackage from './api/ArcticPackage';
-import Class from './interpreter/values/Class';
-import Namespace from './interpreter/values/Namespace';
-import CallableFunction from './interpreter/values/CallableFunction';
-import { Callable } from './interpreter/values/Callable';
-import Typing from './interpreter/Typing';
-import Instance from './interpreter/values/Instance';
 
 function runFile(file: string) {
-	if (file.trim() == "") {
+	if (!file) {
 		console.log(new FileError("Please input a file."));
 		return;
 	}
@@ -28,6 +19,7 @@ function runFile(file: string) {
 	}
 
 	const data = fs.readFileSync(file, "utf-8");
+	if(data.trim() == "") return;
 
 	const lexer = new Lexer(file, data);
 	const { tokens, error } = lexer.tokenize();
@@ -52,16 +44,14 @@ function runFile(file: string) {
 	return Interpreter.interpreter.interpret(statements);
 }
 
+function main() {
+	process.argv.splice(0, 2);
+	const file = process.argv[0];
+	runFile(file);
+}
+
+main();
+
 export {
-	ArcticError,
-	ArcticFunction,
-	ArcticPackage,
-	Class,
-	Namespace,
-	Interpreter,
-	CallableFunction,
-	Callable,
-    Typing,
-    Instance,
 	runFile
 };

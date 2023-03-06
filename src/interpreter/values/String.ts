@@ -1,5 +1,4 @@
-import Class from "./Class";
-import ArcticFunction from '../../api/ArcticFunction';
+import { ArcticFunction, Class } from 'arcticpackage';
 
 export default class String extends Class {
 
@@ -10,7 +9,7 @@ export default class String extends Class {
 
         this.setMethod(new ArcticFunction("String", {
             arity: 1,
-            call(interpreter, args) {
+            call(args) {
                 let value = args[0];
                 if(typeof value != "string") {
                     console.log(`Runtime Error: Expected string got ${typeof value} instead.`);
@@ -22,7 +21,7 @@ export default class String extends Class {
 
         this.setMethod(new ArcticFunction("length", {
             arity: 0,
-            call(interpreter, args) {
+            call(args) {
                 return (_this.findProperty("value") as string).length;
             },
         }));

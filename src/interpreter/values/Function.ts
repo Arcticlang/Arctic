@@ -1,13 +1,10 @@
 import FuncDefNode from "../../parser/nodes/FuncDefNode";
 import Environment from "../Environment";
 import Interpreter from "../Interpreter";
-import { Callable } from "./Callable";
-import util from "util";
 import Typing from "../Typing";
 import RuntimeError from "../../errors/RuntimeError";
 import Return from "../Return";
-import Instance from "./Instance";
-import CallableFunction from "./CallableFunction";
+import { CallableFunction, Instance } from "arcticpackage";
 
 export default class Function extends CallableFunction {
 	private declaration: FuncDefNode;
@@ -31,7 +28,7 @@ export default class Function extends CallableFunction {
 		return this.declaration.argNameTokens.length;
 	}
 
-	call(interpreter: Interpreter, args: any[]) {
+	call(args: any[]) {
 		let environment = new Environment(this.closure);
 		for (let i = 0; i < this.declaration.argNameTokens.length; i++) {
 			let param = this.declaration.argNameTokens[i];
@@ -47,7 +44,7 @@ export default class Function extends CallableFunction {
 		}
 
 		try {
-			interpreter.executeBlock(this.declaration.bodyNode, environment);
+			Interpreter.interpreter.executeBlock(this.declaration.bodyNode, environment);
 		} catch (returnValue) {
 			if (!(returnValue instanceof Return)) return null;
 			if(this.isInitializer) return this.closure.getAt(0, "this");

@@ -1,3 +1,4 @@
-import package "standard"
+import package "std"
+import package "files"
 
-standard.console.println("Hello World")
+std.println(files.readText("./test/test.txt"))

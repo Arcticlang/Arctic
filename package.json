@@ -3,10 +3,9 @@
   "version": "0.0.6",
   "description": "A programming language, made easy, for beginners.",
   "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "compile": "pkg -t node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path build dist/arctic.js"
+    "compile": "pkg -t node14-linux-x64,node14-macos-x64,node14-win-x64 --out-path build dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -27,5 +26,8 @@
   "homepage": "https://github.com/Arcticlang/Arctic#readme",
   "devDependencies": {
     "@types/node": "^18.14.1"
+  },
+  "dependencies": {
+    "arcticpackage": "^0.0.3"
   }
 }

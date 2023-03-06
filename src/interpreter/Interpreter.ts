@@ -13,7 +13,6 @@ import IfNode from "../parser/nodes/IfNode";
 import LogicalNode from "../parser/nodes/LogicalNode";
 import WhileNode from "../parser/nodes/WhileNode";
 import CallNode from "../parser/nodes/CallNode";
-import { Callable, isCallable } from "./values/Callable";
 import CastNode from "../parser/nodes/CastNode";
 import Typing from "./Typing";
 import FuncDefNode from "../parser/nodes/FuncDefNode";
@@ -21,14 +20,13 @@ import Function from "./values/Function";
 import ReturnNode from '../parser/nodes/ReturnNode';
 import Return from "./Return";
 import ClassNode from "../parser/nodes/ClassNode";
-import Class from "./values/Class";
-import Instance from "./values/Instance";
 import GetNode from "../parser/nodes/GetNode";
 import SetNode from "../parser/nodes/SetNode";
 import ThisNode from "../parser/nodes/ThisNode";
 import NamespaceNode from '../parser/nodes/NamespaceNode';
-import Namespace from "./values/Namespace";
 import ImportNode from "../parser/nodes/ImportNode";
+
+import { Class, Callable, isCallable, Namespace, Instance, ArcticPackage } from "arcticpackage";
 
 export function getattr(obj: any, prop: any, defaultValue: any = null) {
 	if (prop in obj) {
@@ -237,23 +235,21 @@ export default class Interpreter {
 		let name = node.name.value;
 		this.environment.define(name, null);
 
-		let classes = new Map<string, Class>();
+		let properties = new Map<string, any>();
 		for(let klass of node.classes) {
-			classes.set(klass.name.value, this.makeClass(klass));
+			properties.set(klass.name.value, this.makeClass(klass));
 		}
 
-		let methods = new Map<string, Function>();
 		for(let method of node.methods) {
 			let func = new Function(method, this.environment, method.name.value == node.name.value);
-			methods.set(method.name.value, func);
+			properties.set(method.name.value, func);
 		}
 
-		let properties = new Map<string, any>();
 		for(let property of node.properties) {
 			properties.set(property.name.value, this.visit(property));
 		}
 
-		let namespace = new Namespace(name, classes, methods, properties);
+		let namespace = new Namespace(name, properties);
 		this.environment.assign(node.name, namespace);
 		return null;
 	}
@@ -298,7 +294,7 @@ export default class Interpreter {
 				node.posEnd
 			);
 		}
-		return func.call(this, args);
+		return func.call(args);
 	}
 
 	visit_BlockNode(node: BlockNode) {
@@ -324,8 +320,15 @@ export default class Interpreter {
 
 	visit_GetNode(node: GetNode) {
 		let object = this.visit(node.object);
-		if(object instanceof Instance || object instanceof Namespace) {
-			return object.get(node.name);
+
+		if(object instanceof Instance || object instanceof Namespace || object instanceof ArcticPackage) {
+			let value;
+			try {
+				value = object.get(node.name.value);
+			} catch(str) {
+				throw new RuntimeError(str as string, node.name.posStart, node.name.posEnd);
+			}
+			return value!;
 		}
 
 		throw new RuntimeError("Only instances and namespaces have properties.", node.posStart, node.posEnd);

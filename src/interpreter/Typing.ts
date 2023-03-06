@@ -1,5 +1,5 @@
+import { Instance } from "arcticpackage";
 import Token from "../lexer/Token";
-import Instance from "./values/Instance";
 
 export default class Typing {
 
